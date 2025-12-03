@@ -7,6 +7,11 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Puetos para render
+var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
+
+builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+
 // Add services to the container.
 
 builder.Services.AddControllers();
@@ -37,7 +42,7 @@ builder.Services.AddAuthentication(config =>
         ValidateLifetime = true,
         ClockSkew = TimeSpan.Zero,
         IssuerSigningKey = new SymmetricSecurityKey
-        (Encoding.UTF8.GetBytes(builder.Configuration["Jwt:key"]!))
+        (Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
     };
 });
 
