@@ -24,8 +24,25 @@ namespace SeguridadInformaticaAPI.Controllers
 
         [HttpPost]
         [Route("SignUp")]
-        public async Task<IActionResult> SignUp(UserDTO model)
+        public async Task<IActionResult> SignUp([FromBody] UserDTO model)
         {
+            if (model == null)
+                return BadRequest(new { message = "Body vacío o inválido" });
+
+            if (string.IsNullOrWhiteSpace(model.Name) ||
+                string.IsNullOrWhiteSpace(model.Email) ||
+                string.IsNullOrWhiteSpace(model.Password))
+            {
+                return BadRequest(new { message = "Todos los campos son obligatorios" });
+            }
+
+            // Validar si ya existe el email
+            var existingUser = await _dbSeguridadInformaticaContext.Users
+                .FirstOrDefaultAsync(u => u.Email == model.Email);
+
+            if (existingUser != null)
+                return BadRequest(new { message = "El email ya está registrado" });
+
             var modelUser = new User
             {
                 Name = model.Name,
