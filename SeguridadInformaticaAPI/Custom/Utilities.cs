@@ -43,7 +43,7 @@ namespace SeguridadInformaticaAPI.Custom
             var userClaims = new[]
             {
                 new Claim(ClaimTypes.NameIdentifier, model.Id.ToString()),
-                new Claim(ClaimTypes.Email, model.Email!)
+                // new Claim(ClaimTypes.Email, model.Email!)
             };
 
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:key"]!));
@@ -53,7 +53,7 @@ namespace SeguridadInformaticaAPI.Custom
             // Crear detalle del token
             var jwtConfig = new JwtSecurityToken(
                 claims: userClaims,
-                expires: DateTime.UtcNow.AddMinutes(10),
+                expires: DateTime.UtcNow.AddDays(1),
                 signingCredentials: credentials
                 );
 
