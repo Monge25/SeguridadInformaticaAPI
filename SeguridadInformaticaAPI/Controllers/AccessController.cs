@@ -78,6 +78,7 @@ namespace SeguridadInformaticaAPI.Controllers
                 HttpOnly = true,
                 Secure = true, // usar HTTPS
                 SameSite = SameSiteMode.None,
+                Path = "/",
                 Expires = DateTime.UtcNow.AddHours(1)
             });
 
@@ -93,6 +94,7 @@ namespace SeguridadInformaticaAPI.Controllers
                 HttpOnly = true,
                 Secure = true,
                 SameSite = SameSiteMode.None,
+                Path = "/",
                 Expires = DateTime.UtcNow.AddDays(-1) // expira inmediatamente
             });
 
