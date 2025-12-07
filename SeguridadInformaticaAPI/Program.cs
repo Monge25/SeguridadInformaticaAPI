@@ -7,16 +7,13 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Puetos para render
+// Puerto para Render
 var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
-
 builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
 // Add services to the container.
-
 builder.Services.AddControllers();
-
-builder.Services.AddEndpointsApiExplorer(); 
+builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<SeguridadInformaticaDbContext>(options =>
@@ -26,48 +23,71 @@ builder.Services.AddDbContext<SeguridadInformaticaDbContext>(options =>
 
 builder.Services.AddSingleton<Utilities>();
 
-builder.Services.AddAuthentication(config =>
+// ===== JWT desde cookie HttpOnly =====
+builder.Services.AddAuthentication(options =>
 {
-    config.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    config.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-}).AddJwtBearer(config =>
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
 {
-    config.RequireHttpsMetadata = false;
-    config.SaveToken = true;
-    config.TokenValidationParameters = new TokenValidationParameters
+    options.RequireHttpsMetadata = false;
+    options.SaveToken = true;
+
+    options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuerSigningKey = true,
         ValidateIssuer = false,
         ValidateAudience = false,
         ValidateLifetime = true,
         ClockSkew = TimeSpan.Zero,
-        IssuerSigningKey = new SymmetricSecurityKey
-        (Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
+        IssuerSigningKey = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)
+        )
+    };
+
+    // Leer JWT desde cookie llamada "jwt"
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            if (context.Request.Cookies.ContainsKey("jwt"))
+            {
+                context.Token = context.Request.Cookies["jwt"];
+            }
+
+            return Task.CompletedTask;
+        }
     };
 });
 
+// CORS 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("NewPolicy", app =>
+    options.AddPolicy("AllowFrontend", policy =>
     {
-        app.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+        policy
+            .WithOrigins(
+                "https://seguridadinformaticaapi.onrender.com"
+            )
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials(); 
     });
 });
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-app.UseCors("NewPolicy");
+// ===== Middleware =====
+app.UseCors("AllowFrontend");
 
 app.UseSwagger();
-app.UseSwaggerUI();     
-
-// app.UseHttpsRedirection();
+app.UseSwaggerUI();
 
 app.UseAuthentication();
-
 app.UseAuthorization();
 
 app.MapControllers();
 
 app.Run();
+

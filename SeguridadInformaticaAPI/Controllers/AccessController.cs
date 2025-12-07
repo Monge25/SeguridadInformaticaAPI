@@ -22,6 +22,7 @@ namespace SeguridadInformaticaAPI.Controllers
             _utilities = utilities;
         }
 
+        [Authorize]
         [HttpPost]
         [Route("SignUp")]
         public async Task<IActionResult> SignUp([FromBody] UserDTO model)
@@ -59,6 +60,7 @@ namespace SeguridadInformaticaAPI.Controllers
                 return StatusCode(StatusCodes.Status200OK, new { isSuccess = false });
         }
 
+        [Authorize]
         [HttpPost]
         [Route("Login")]
         public async Task<IActionResult> Login(LoginDTO model)
@@ -68,9 +70,20 @@ namespace SeguridadInformaticaAPI.Controllers
                 ).FirstOrDefaultAsync();
 
             if (userFound == null)
-                return StatusCode(StatusCodes.Status200OK, new { isSucces = false, token = "" });
-            else
-                return StatusCode(StatusCodes.Status200OK, new { isSucces = true, token = _utilities.GenerateJWT(userFound) });
+                return StatusCode(StatusCodes.Status200OK, new { isSucces = false, /* token = "" */ });
+
+            var token = _utilities.GenerateJWT(userFound);
+
+            // Crear cookie segura
+            Response.Cookies.Append("jwt", token, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true, // usar HTTPS
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTime.UtcNow.AddHours(1)
+            });
+
+            return StatusCode(StatusCodes.Status200OK, new { isSucces = true /* token = _utilities.GenerateJWT(userFound) */ });
         }
     }
 }
