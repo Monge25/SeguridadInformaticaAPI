@@ -51,11 +51,15 @@ builder.Services.AddAuthentication(options =>
     {
         OnMessageReceived = context =>
         {
-            if (context.Request.Cookies.ContainsKey("jwt"))
+            // Si NO existe la cookie, NO hay token -> debe fallar la autenticación
+            if (!context.Request.Cookies.TryGetValue("jwt", out var token) || string.IsNullOrEmpty(token))
             {
-                context.Token = context.Request.Cookies["jwt"];
+                context.NoResult(); // obliga a retornar 401
+                return Task.CompletedTask;
             }
 
+            // Si sí hay cookie, asignamos el token
+            context.Token = token;
             return Task.CompletedTask;
         }
     };
