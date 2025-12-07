@@ -68,7 +68,7 @@ builder.Services.AddCors(options =>
     {
         policy
             .WithOrigins(
-                "https://seguridadinformaticaapi.onrender.com"
+                "https://seguridad-informatica-web.vercel.app"
             )
             .AllowAnyHeader()
             .AllowAnyMethod()
