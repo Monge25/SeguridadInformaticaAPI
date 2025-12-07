@@ -31,7 +31,7 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
-    options.RequireHttpsMetadata = false;
+    options.RequireHttpsMetadata = true;
     options.SaveToken = true;
 
     options.TokenValidationParameters = new TokenValidationParameters
@@ -82,11 +82,11 @@ var app = builder.Build();
 // ===== Middleware =====
 app.UseCors("AllowFrontend");
 
-app.UseSwagger();
-app.UseSwaggerUI();
-
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.MapControllers();
 
