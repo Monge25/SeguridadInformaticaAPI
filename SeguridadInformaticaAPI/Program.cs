@@ -46,19 +46,26 @@ builder.Services.AddAuthentication(options =>
         )
     };
 
-    // Leer JWT desde cookie llamada "jwt"
+    // EVENTOS PARA CONTROLAR EXACTAMENTE DE DÓNDE SALE EL TOKEN 
     options.Events = new JwtBearerEvents
     {
         OnMessageReceived = context =>
         {
-            // Si NO existe la cookie, NO hay token -> debe fallar la autenticación
-            if (!context.Request.Cookies.TryGetValue("jwt", out var token) || string.IsNullOrEmpty(token))
+            // Evitar que tome un token del header Authorization
+            if (context.Request.Headers.ContainsKey("Authorization"))
             {
-                context.NoResult(); // obliga a retornar 401
+                context.NoResult(); // Ignorar por completo este token
                 return Task.CompletedTask;
             }
 
-            // Si sí hay cookie, asignamos el token
+            // Leer SOLO desde cookie "jwt"
+            if (!context.Request.Cookies.TryGetValue("jwt", out var token) || string.IsNullOrEmpty(token))
+            {
+                context.NoResult(); // Sin cookie SIN token debe dar 401
+                return Task.CompletedTask;
+            }
+
+            // Cookie encontrada asignamos token
             context.Token = token;
             return Task.CompletedTask;
         }
@@ -77,7 +84,7 @@ builder.Services.AddCors(options =>
             )
             .AllowAnyHeader()
             .AllowAnyMethod()
-            .AllowCredentials(); 
+            .AllowCredentials();
     });
 });
 
@@ -95,4 +102,3 @@ app.UseSwaggerUI();
 app.MapControllers();
 
 app.Run();
-

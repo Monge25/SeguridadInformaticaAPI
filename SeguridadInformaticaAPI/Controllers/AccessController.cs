@@ -106,7 +106,10 @@ namespace SeguridadInformaticaAPI.Controllers
         [Route("Validate")]
         public IActionResult Validate()
         {
-            return Ok(new { isAuthenticated = true });
+            if (!User.Identity?.IsAuthenticated ?? false)
+                return Unauthorized(new { isAuthenticated = false });
+
+            return Ok(new { isAuthenticated = true, user = User.Identity.Name });
         }
     }
 }
