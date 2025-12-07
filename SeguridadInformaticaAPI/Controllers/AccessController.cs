@@ -85,5 +85,13 @@ namespace SeguridadInformaticaAPI.Controllers
 
             return StatusCode(StatusCodes.Status200OK, new { isSucces = true /* token = _utilities.GenerateJWT(userFound) */ });
         }
+
+        [Authorize]
+        [HttpGet]
+        [Route("Validate")]
+        public IActionResult Validate()
+        {
+            return Ok(new { isAuthenticated = true });
+        }
     }
 }
