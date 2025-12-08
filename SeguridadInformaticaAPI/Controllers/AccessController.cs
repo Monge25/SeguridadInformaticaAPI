@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using SeguridadInformaticaAPI.Custom;
 using SeguridadInformaticaAPI.Models;
@@ -23,6 +24,7 @@ namespace SeguridadInformaticaAPI.Controllers
         }
 
         [HttpPost]
+        [EnableRateLimiting("RegisterPolicy")]
         [Route("SignUp")]
         public async Task<IActionResult> SignUp([FromBody] UserDTO model)
         {
@@ -60,6 +62,7 @@ namespace SeguridadInformaticaAPI.Controllers
         }
 
         [HttpPost]
+        [EnableRateLimiting("LoginLimiter")]
         [Route("Login")]
         public async Task<IActionResult> Login(LoginDTO model)
         {
